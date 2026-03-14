@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CoreInventory</title>
+
+  <!-- ── CSS: load order matters ── -->
+  <link rel="stylesheet" href="css/base.css"/>        <!-- Reset & body -->
+  <link rel="stylesheet" href="css/auth.css"/>        <!-- Role select, login, OTP -->
+  <link rel="stylesheet" href="css/dashboard.css"/>   <!-- Sidebar, topbar, layout -->
+  <link rel="stylesheet" href="css/components.css"/>  <!-- Cards, tables, badges, modals -->
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+  PAGE 1 — ROLE SELECTION
+════════════════════════════════════ -->
+<div id="role-select-page" class="auth-page" style="flex-direction:column; background:#0f172a">
+  <div class="role-header">
+    <h1>📦 CoreInventory</h1>
+    <p>Who are you signing in as?</p>
+  </div>
+  <div class="role-cards">
+    <div class="role-card manager" onclick="goToLogin('manager')">
+      <div class="rc-icon">🧑‍💼</div>
+      <div class="rc-title">Inventory Manager</div>
+      <div class="rc-desc">Manage products, receipts, deliveries and full stock operations</div>
+    </div>
+    <div class="role-card staff" onclick="goToLogin('staff')">
+      <div class="rc-icon">🏭</div>
+      <div class="rc-title">Warehouse Staff</div>
+      <div class="rc-desc">Handle transfers, picking, shelving and stock counting tasks</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE 2A — INVENTORY MANAGER LOGIN
+════════════════════════════════════ -->
+<div id="manager-login-page" class="auth-page">
+  <div class="login-box">
+
+    <div class="login-logo">
+      <div class="role-badge badge-manager">🧑‍💼 Inventory Manager</div>
+      <h1>📦 CoreInventory</h1>
+      <p>Manager portal — full access</p>
+    </div>
+
+    <!-- Sign In / Sign Up Section -->
+    <div id="m-auth-section">
+      <div class="tabs">
+        <button class="tab active-manager" id="m-tab-login"  onclick="mSwitchTab('login')">Sign In</button>
+        <button class="tab"               id="m-tab-signup" onclick="mSwitchTab('signup')">Sign Up</button>
+      </div>
+      <div id="m-auth-error" class="error-msg"></div>
+      <div class="field" id="m-name-field" style="display:none">
+        <label>Full Name</label>
+        <input type="text" id="m-inp-name" placeholder="e.g. Rahul Mehta"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="m-inp-email" placeholder="manager@company.com"/>
+      </div>
+      <div class="field">
+        <div class="label-row">
+          <label>Password</label>
+          <button class="btn-link link-manager" id="m-forgot-link" onclick="mShowForgot()">Forgot password?</button>
+        </div>
+        <input type="password" id="m-inp-password" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-manager" id="m-auth-btn" onclick="handleAuth('manager')">Sign In</button>
+      <div class="demo-hint">Demo: sign up with any email &amp; password</div>
+    </div>
+
+    <!-- Forgot Password Section -->
+    <div id="m-forgot-section" style="display:none">
+      <button class="back-link" onclick="mShowAuth()">← Back</button>
+      <h3 style="font-size:15px; margin-bottom:6px">Reset Password</h3>
+      <p style="font-size:12px; color:#888; margin-bottom:14px">Enter your email to get an OTP</p>
+      <div id="m-forgot-error" class="error-msg"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="m-forgot-email" placeholder="manager@company.com"/>
+      </div>
+      <button class="btn btn-manager" onclick="sendOTP('manager')">Send OTP</button>
+    </div>
+
+    <!-- OTP Entry Section -->
+    <div id="m-otp-section" style="display:none">
+      <button class="back-link" onclick="mShowAuth()">← Back</button>
+      <h3 style="font-size:15px; margin-bottom:6px">Enter OTP</h3>
+      <div class="otp-hint" id="m-otp-hint"></div>
+      <div class="otp-boxes">
+        <input class="otp-box" type="text" maxlength="1" id="m-o0" oninput="otpType('m',0)" onkeydown="otpBack(event,'m',0)"/>
+        <input class="otp-box" type="text" maxlength="1" id="m-o1" oninput="otpType('m',1)" onkeydown="otpBack(event,'m',1)"/>
+        <input class="otp-box" type="text" maxlength="1" id="m-o2" oninput="otpType('m',2)" onkeydown="otpBack(event,'m',2)"/>
+        <input class="otp-box" type="text" maxlength="1" id="m-o3" oninput="otpType('m',3)" onkeydown="otpBack(event,'m',3)"/>
+        <input class="otp-box" type="text" maxlength="1" id="m-o4" oninput="otpType('m',4)" onkeydown="otpBack(event,'m',4)"/>
+        <input class="otp-box" type="text" maxlength="1" id="m-o5" oninput="otpType('m',5)" onkeydown="otpBack(event,'m',5)"/>
+      </div>
+      <div id="m-otp-error" class="error-msg"></div>
+      <button class="btn btn-manager" onclick="verifyOTP('manager')">Verify OTP</button>
+    </div>
+
+    <!-- New Password Section -->
+    <div id="m-newpw-section" style="display:none">
+      <button class="back-link" onclick="mShowAuth()">← Back</button>
+      <h3 style="font-size:15px; margin-bottom:6px">New Password</h3>
+      <div id="m-newpw-error" class="error-msg"></div>
+      <div class="field">
+        <label>New Password</label>
+        <input type="password" id="m-inp-newpw" placeholder="Minimum 6 characters"/>
+      </div>
+      <button class="btn btn-manager" onclick="saveNewPassword('manager')">Save Password</button>
+    </div>
+
+    <div class="switch-role">
+      Warehouse Staff? <a class="link-staff" onclick="goToLogin('staff')">Sign in here →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE 2B — WAREHOUSE STAFF LOGIN
+════════════════════════════════════ -->
+<div id="staff-login-page" class="auth-page">
+  <div class="login-box">
+
+    <div class="login-logo">
+      <div class="role-badge badge-staff">🏭 Warehouse Staff</div>
+      <h1>📦 CoreInventory</h1>
+      <p>Staff portal — operations access</p>
+    </div>
+
+    <!-- Sign In / Sign Up Section -->
+    <div id="s-auth-section">
+      <div class="tabs">
+        <button class="tab active-staff" id="s-tab-login"  onclick="sSwitchTab('login')">Sign In</button>
+        <button class="tab"             id="s-tab-signup" onclick="sSwitchTab('signup')">Sign Up</button>
+      </div>
+      <div id="s-auth-error" class="error-msg"></div>
+      <div class="field" id="s-name-field" style="display:none">
+        <label>Full Name</label>
+        <input type="text" id="s-inp-name" placeholder="e.g. Amit Kumar"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="s-inp-email" placeholder="staff@company.com"/>
+      </div>
+      <div class="field">
+        <div class="label-row">
+          <label>Password</label>
+          <button class="btn-link link-staff" id="s-forgot-link" onclick="sShowForgot()">Forgot password?</button>
+        </div>
+        <input type="password" id="s-inp-password" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-staff" id="s-auth-btn" onclick="handleAuth('staff')">Sign In</button>
+      <div class="demo-hint">Demo: sign up with any email &amp; password</div>
+    </div>
+
+    <!-- Forgot Password Section -->
+    <div id="s-forgot-section" style="display:none">
+      <button class="back-link" onclick="sShowAuth()">← Back</button>
+      <h3 style="font-size:15px; margin-bottom:6px">Reset Password</h3>
+      <div id="s-forgot-error" class="error-msg"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="s-forgot-email" placeholder="staff@company.com"/>
+      </div>
+      <button class="btn btn-staff" onclick="sendOTP('staff')">Send OTP</button>
+    </div>
+
+    <!-- OTP Entry Section -->
+    <div id="s-otp-section" style="display:none">
+      <button class="back-link" onclick="sShowAuth()">← Back</button>
+      <h3 style="font-size:15px; margin-bottom:6px">Enter OTP</h3>
+      <div class="otp-hint" id="s-otp-hint"></div>
+      <div class="otp-boxes">
+        <input class="otp-box" type="text" maxlength="1" id="s-o0" oninput="otpType('s',0)" onkeydown="otpBack(event,'s',0)"/>
+        <input class="otp-box" type="text" maxlength="1" id="s-o1" oninput="otpType('s',1)" onkeydown="otpBack(event,'s',1)"/>
+        <input class="otp-box" type="text" maxlength="1" id="s-o2" oninput="otpType('s',2)" onkeydown="otpBack(event,'s',2)"/>
+        <input class="otp-box" type="text" maxlength="1" id="s-o3" oninput="otpType('s',3)" onkeydown="otpBack(event,'s',3)"/>
+        <input class="otp-box" type="text" maxlength="1" id="s-o4" oninput="otpType('s',4)" onkeydown="otpBack(event,'s',4)"/>
+        <input class="otp-box" type="text" maxlength="1" id="s-o5" oninput="otpType('s',5)" onkeydown="otpBack(event,'s',5)"/>
+      </div>
+      <div id="s-otp-error" class="error-msg"></div>
+      <button class="btn btn-staff" onclick="verifyOTP('staff')">Verify OTP</button>
+    </div>
+
+    <!-- New Password Section -->
+    <div id="s-newpw-section" style="display:none">
+      <button class="back-link" onclick="sShowAuth()">← Back</button>
+      <h3 style="font-size:15px; margin-bottom:6px">New Password</h3>
+      <div id="s-newpw-error" class="error-msg"></div>
+      <div class="field">
+        <label>New Password</label>
+        <input type="password" id="s-inp-newpw" placeholder="Minimum 6 characters"/>
+      </div>
+      <button class="btn btn-staff" onclick="saveNewPassword('staff')">Save Password</button>
+    </div>
+
+    <div class="switch-role">
+      Inventory Manager? <a class="link-manager" onclick="goToLogin('manager')">Sign in here →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE 3 — DASHBOARD
+════════════════════════════════════ -->
+<div id="dashboard-page">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-brand">
+      📦 CoreInventory
+      <span>Stock Operations Platform</span>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-lbl">Main</div>
+      <button class="nav-btn active" onclick="goPage('dashboard', this)">⊞ &nbsp;Dashboard</button>
+      <button class="nav-btn" onclick="goPage('products', this)">
+        ◈ &nbsp;Products
+        <span class="nav-badge" id="stock-badge">0</span>
+      </button>
+
+      <div class="sb-lbl">Operations</div>
+      <button class="nav-btn" onclick="goPage('receipts', this)">↓ &nbsp;Receipts</button>
+      <button class="nav-btn" onclick="goPage('deliveries', this)">↑ &nbsp;Deliveries</button>
+      <button class="nav-btn" onclick="goPage('transfers', this)">⇄ &nbsp;Transfers</button>
+      <button class="nav-btn" onclick="goPage('adjustments', this)">≈ &nbsp;Adjustments</button>
+      <button class="nav-btn" onclick="goPage('history', this)">◷ &nbsp;Move History</button>
+
+      <div class="sb-lbl">Config</div>
+      <button class="nav-btn" onclick="goPage('settings', this)">⚙ &nbsp;Settings</button>
+    </div>
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div>
+          <div class="user-name" id="user-name">User</div>
+          <div class="user-role-tag" id="user-role-tag">—</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">⏻ Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <h2 id="page-title">Dashboard</h2>
+      <span class="role-tag" id="topbar-role-tag"></span>
+      <input type="text" id="global-search" placeholder="🔍 Search…" oninput="globalSearch(this.value)" style="margin-left:auto"/>
+    </div>
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div class="page-section active" id="section-dashboard">
+      <div class="kpi-row">
+        <div class="kpi-card"><div class="kpi-label">Total Products</div>   <div class="kpi-value" id="kpi-total"      style="color:#6366f1">0</div><div class="kpi-sub">All warehouses</div></div>
+        <div class="kpi-card"><div class="kpi-label">Low Stock</div>        <div class="kpi-value" id="kpi-low"        style="color:#f97316">0</div><div class="kpi-sub">Below reorder point</div></div>
+        <div class="kpi-card"><div class="kpi-label">Out of Stock</div>     <div class="kpi-value" id="kpi-out"        style="color:#ef4444">0</div><div class="kpi-sub">Needs attention</div></div>
+        <div class="kpi-card"><div class="kpi-label">Pending Receipts</div> <div class="kpi-value" id="kpi-receipts"  style="color:#22d3ee">0</div><div class="kpi-sub">Awaiting validation</div></div>
+        <div class="kpi-card"><div class="kpi-label">Pending Deliveries</div><div class="kpi-value" id="kpi-deliveries" style="color:#a855f7">0</div><div class="kpi-sub">In progress</div></div>
+      </div>
+      <div class="filter-bar">
+        <span>Type:</span>
+        <button class="filter-chip active" onclick="filterBy('type','All',this)">All</button>
+        <button class="filter-chip" onclick="filterBy('type','Receipts',this)">Receipts</button>
+        <button class="filter-chip" onclick="filterBy('type','Delivery',this)">Delivery</button>
+        <button class="filter-chip" onclick="filterBy('type','Adjustments',this)">Adjustments</button>
+        &nbsp;
+        <span>Status:</span>
+        <button class="filter-chip active" onclick="filterBy('status','All',this)">All</button>
+        <button class="filter-chip" onclick="filterBy('status','Done',this)">Done</button>
+        <button class="filter-chip" onclick="filterBy('status','Waiting',this)">Waiting</button>
+        <button class="filter-chip" onclick="filterBy('status','Ready',this)">Ready</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span>Recent Activity</span></div>
+        <table>
+          <thead><tr><th>Reference</th><th>Type</th><th>Party</th><th>Items</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="activity-table"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span>⚠️ Stock Alerts</span>
+          <span id="alert-count" style="background:#fee2e2;color:#b91c1c;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700">0 items</span>
+        </div>
+        <div id="alert-list" style="padding:8px 14px 14px"></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS PAGE ── -->
+    <div class="page-section" id="section-products">
+      <div class="page-toolbar">
+        <h3>Products</h3>
+        <input class="search-input" placeholder="🔍 Search by name or SKU…" oninput="renderProducts(this.value)"/>
+        <select class="filter-select-sm" onchange="renderProducts(document.querySelector('#section-products .search-input').value, this.value)" id="cat-filter">
+          <option value="">All Categories</option>
+          <option>Raw Materials</option>
+          <option>Furniture</option>
+          <option>Electrical</option>
+          <option>Plumbing</option>
+          <option>Safety</option>
+          <option>Consumables</option>
+        </select>
+        <button class="add-btn" onclick="openModal('product')">+ Add Product</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Name</th><th>SKU</th><th>Category</th><th>Unit</th><th>Stock Level</th><th>Reorder At</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="products-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── RECEIPTS PAGE ── -->
+    <div class="page-section" id="section-receipts">
+      <div class="page-toolbar">
+        <h3>Receipts — Incoming Goods</h3>
+        <select class="filter-select-sm" onchange="renderReceipts(this.value)" id="rec-status-filter">
+          <option value="">All Statuses</option>
+          <option>Waiting</option><option>Ready</option><option>Done</option><option>Canceled</option>
+        </select>
+        <button class="add-btn" onclick="openModal('receipt')">+ New Receipt</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>ID</th><th>Supplier</th><th>Items</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="receipts-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── DELIVERIES PAGE ── -->
+    <div class="page-section" id="section-deliveries">
+      <div class="page-toolbar">
+        <h3>Delivery Orders — Outgoing Goods</h3>
+        <select class="filter-select-sm" onchange="renderDeliveries(this.value)" id="del-status-filter">
+          <option value="">All Statuses</option>
+          <option>Pick</option><option>Pack</option><option>Done</option><option>Canceled</option>
+        </select>
+        <button class="add-btn" onclick="openModal('delivery')">+ New Delivery</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="deliveries-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TRANSFERS PAGE ── -->
+    <div class="page-section" id="section-transfers">
+      <div class="page-toolbar">
+        <h3>Internal Transfers</h3>
+        <select class="filter-select-sm" onchange="renderTransfers(this.value)" id="trf-status-filter">
+          <option value="">All Statuses</option>
+          <option>Draft</option><option>Ready</option><option>Done</option>
+        </select>
+        <button class="add-btn" onclick="openModal('transfer')">+ New Transfer</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>ID</th><th>Product</th><th>From</th><th>To</th><th>Qty</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="transfers-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ADJUSTMENTS PAGE ── -->
+    <div class="page-section" id="section-adjustments">
+      <div class="page-toolbar">
+        <h3>Stock Adjustments</h3>
+        <button class="add-btn" onclick="openModal('adjustment')">+ New Adjustment</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>ID</th><th>Product</th><th>Type</th><th>Qty</th><th>Reason</th><th>Date</th><th>Validated By</th></tr></thead>
+          <tbody id="adjustments-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── MOVE HISTORY PAGE ── -->
+    <div class="page-section" id="section-history">
+      <div class="page-toolbar">
+        <h3>Stock Ledger — Move History</h3>
+        <select class="filter-select-sm" onchange="renderHistory(this.value)" id="hist-type-filter">
+          <option value="">All Types</option>
+          <option>Receipt</option><option>Delivery</option><option>Transfer</option><option>Adjustment</option>
+        </select>
+        <select class="filter-select-sm" onchange="renderHistory(document.getElementById('hist-type-filter').value, this.value)" id="hist-prod-filter">
+          <option value="">All Products</option>
+        </select>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Date</th><th>Reference</th><th>Product</th><th>Type</th><th>Movement</th><th>Qty Change</th><th>Stock After</th></tr></thead>
+          <tbody id="history-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS PAGE ── -->
+    <div class="page-section" id="section-settings">
+      <div class="page-toolbar"><h3>Settings</h3></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+        <div>
+          <div class="card">
+            <div class="card-header"><span>🏭 Warehouses</span><button onclick="openModal('warehouse')">+ Add</button></div>
+            <div id="wh-list" style="padding:12px 16px"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span>🔔 Notifications</span></div>
+            <div class="card-body">
+              <div class="setting-row">
+                <div><div class="setting-label">Low stock alerts</div><div class="setting-desc">Alert when stock falls below reorder point</div></div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Receipt reminders</div><div class="setting-desc">Notify when receipts are pending &gt;2 days</div></div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Delivery alerts</div><div class="setting-desc">Alert on pending delivery orders</div></div>
+                <button class="toggle" onclick="this.classList.toggle('on')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-header"><span>⚙️ General</span></div>
+            <div class="card-body">
+              <div class="field"><label>Company Name</label><input type="text" value="CoreInventory Co." style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;outline:none"/></div>
+              <div class="field">
+                <label>Default Currency</label>
+                <select style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;outline:none;background:#fff;font-family:Arial,sans-serif">
+                  <option>INR — Indian Rupee</option>
+                  <option>USD — US Dollar</option>
+                  <option>EUR — Euro</option>
+                </select>
+              </div>
+              <div class="field"><label>Low Stock Threshold (default)</label><input type="number" value="10" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;outline:none"/></div>
+              <button style="padding:9px 20px;background:#6366f1;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:Arial,sans-serif">Save Changes</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span>👥 User Info</span></div>
+            <div class="card-body" id="settings-user-info"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end dashboard-page -->
+
+<!-- ════════════════════════════════════
+  MODALS
+════════════════════════════════════ -->
+
+<!-- Add Product -->
+<div class="modal-overlay" id="modal-product">
+  <div class="modal">
+    <h3>➕ Add Product</h3>
+    <div class="form-row">
+      <div class="field"><label>Product Name</label><input type="text" id="p-name" placeholder="e.g. Steel Rods"/></div>
+      <div class="field"><label>SKU / Code</label><input type="text" id="p-sku" placeholder="e.g. STL-001"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Category</label>
+        <select id="p-cat"><option>Raw Materials</option><option>Furniture</option><option>Electrical</option><option>Plumbing</option><option>Safety</option><option>Consumables</option></select>
+      </div>
+      <div class="field">
+        <label>Unit of Measure</label>
+        <select id="p-unit"><option>kg</option><option>pcs</option><option>m</option><option>L</option><option>boxes</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Initial Stock</label><input type="number" id="p-stock"   value="0"  min="0"/></div>
+      <div class="field"><label>Reorder At</label>   <input type="number" id="p-reorder" value="10" min="0"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('product')">Cancel</button>
+      <button class="btn-save"   onclick="saveProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Receipt -->
+<div class="modal-overlay" id="modal-receipt">
+  <div class="modal">
+    <h3>📥 New Receipt</h3>
+    <div class="field"><label>Supplier Name</label><input type="text" id="r-supplier" placeholder="e.g. MetalCorp"/></div>
+    <div class="form-row">
+      <div class="field"><label>Product</label><select id="r-product"></select></div>
+      <div class="field"><label>Quantity</label><input type="number" id="r-qty" value="1" min="1"/></div>
+    </div>
+    <div class="field"><label>Expected Date</label><input type="date" id="r-date"/></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('receipt')">Cancel</button>
+      <button class="btn-save"   onclick="saveReceipt()">Create Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Delivery -->
+<div class="modal-overlay" id="modal-delivery">
+  <div class="modal">
+    <h3>📤 New Delivery Order</h3>
+    <div class="field"><label>Customer Name</label><input type="text" id="d-customer" placeholder="e.g. ABC Corp"/></div>
+    <div class="form-row">
+      <div class="field"><label>Product</label><select id="d-product"></select></div>
+      <div class="field"><label>Quantity</label><input type="number" id="d-qty" value="1" min="1"/></div>
+    </div>
+    <div class="field"><label>Delivery Date</label><input type="date" id="d-date"/></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('delivery')">Cancel</button>
+      <button class="btn-save"   onclick="saveDelivery()">Create Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Transfer -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal">
+    <h3>🔄 New Internal Transfer</h3>
+    <div class="field"><label>Product</label><select id="t-product"></select></div>
+    <div class="form-row">
+      <div class="field">
+        <label>From Location</label>
+        <select id="t-from"><option>Main Warehouse</option><option>Production Floor</option><option>Rack A</option><option>Rack B</option><option>Warehouse 2</option></select>
+      </div>
+      <div class="field">
+        <label>To Location</label>
+        <select id="t-to"><option>Production Floor</option><option>Main Warehouse</option><option>Rack A</option><option>Rack B</option><option>Warehouse 2</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Quantity</label><input type="number" id="t-qty" value="1" min="1"/></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('transfer')">Cancel</button>
+      <button class="btn-save"   onclick="saveTransfer()">Create Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stock Adjustment -->
+<div class="modal-overlay" id="modal-adjustment">
+  <div class="modal">
+    <h3>📝 Stock Adjustment</h3>
+    <div class="field"><label>Product</label><select id="a-product"></select></div>
+    <div class="form-row">
+      <div class="field">
+        <label>Type</label>
+        <select id="a-type"><option value="Increase">Increase ↑</option><option value="Decrease">Decrease ↓</option></select>
+      </div>
+      <div class="field"><label>Quantity</label><input type="number" id="a-qty" value="1" min="1"/></div>
+    </div>
+    <div class="field">
+      <label>Reason</label>
+      <select id="a-reason"><option>Physical Count</option><option>Damaged</option><option>Expired</option><option>Found</option><option>Other</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel"   onclick="closeModal('adjustment')">Cancel</button>
+      <button class="btn-validate" onclick="saveAdjustment()">Apply Adjustment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Warehouse -->
+<div class="modal-overlay" id="modal-warehouse">
+  <div class="modal">
+    <h3>🏭 Add Warehouse</h3>
+    <div class="field"><label>Warehouse Name</label><input type="text" id="wh-name" placeholder="e.g. Warehouse 3"/></div>
+    <div class="field"><label>Location</label><input type="text" id="wh-loc" placeholder="e.g. Pune, India"/></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('warehouse')">Cancel</button>
+      <button class="btn-save"   onclick="saveWarehouse()">Add Warehouse</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  JAVASCRIPT — Load order is critical:
+  1. data.js      — state variables & localStorage
+  2. utils.js     — helpers (today, showErr)
+  3. auth.js      — login, OTP, session
+  4. dashboard.js — navigation, KPIs, activity
+  5. products.js  — products module
+  6. receipts.js  — receipts module
+  7. deliveries.js — deliveries module
+  8. transfers.js — transfers module
+  9. adjustments.js — adjustments module
+  10. history.js  — move history module
+  11. settings.js — settings & warehouses
+  12. modals.js   — modal open/close (needs renderAll)
+  utils.js boot() runs last via its own IIFE
+════════════════════════════════════ -->
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/products.js"></script>
+<script src="js/receipts.js"></script>
+<script src="js/deliveries.js"></script>
+<script src="js/transfers.js"></script>
+<script src="js/adjustments.js"></script>
+<script src="js/history.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/modals.js"></script>
+
+</body>
+</html>

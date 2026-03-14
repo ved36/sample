@@ -1,0 +1,7 @@
+/* ═══════════════════════════════════════
+   CoreInventory — Base / Reset
+   File: css/base.css
+═══════════════════════════════════════ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f2f5; color: #333; font-size: 14px; }
